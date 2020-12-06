@@ -77,13 +77,20 @@ module.exports = function (passport) {
         response.redirect('/auth/register');
       } else {
         bcrypt.hash(pwd ,10, function(err,hash) { 
-          var user = {
-            id:shortid.generate(),
-            email:email,
-            password: hash,
-            displayName:displayName
-          };
-          db.get('users').push(user).write();
+          var user =db.get('users').find({email:email}).value();
+          if(user) {
+            user.password = hash;
+            user.displayName = displayName;
+            db.get('users').assign(user).write();
+          } else {
+            var user = {
+              id:shortid.generate(),
+              email:email,
+              password: hash,
+              displayName:displayName
+            };
+            db.get('users').push(user).write();
+          }
           request.login(user, function(err) {
             return response.redirect('/');
           }); 
