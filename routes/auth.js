@@ -78,10 +78,15 @@ module.exports = function (passport) {
       } else {
         bcrypt.hash(pwd ,10, function(err,hash) { 
           var user =db.get('users').find({email:email}).value();
+          var puser = db.get('users').find({email:email}).value();
           if(user) {
             user.password = hash;
             user.displayName = displayName;
             db.get('users').assign(user).write();
+          } else if(puser) {
+            puser.password = hash;
+            puser.displayName = displayName;
+            db.get('users').find({id:puser.id}).assign(puser).write();
           } else {
             var user = {
               id:shortid.generate(),
